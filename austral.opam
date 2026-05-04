@@ -3,6 +3,7 @@ opam-version: "2.0"
 version: "0.0.1"
 synopsis: "The bootstrapping compiler for Austral"
 description: "The bootstrapping compiler for Austral."
+license: "GPL-3.0-or-later"
 homepage: "https://austral-lang.org/"
 bug-reports: "https://github.com/austral/austral/issues"
 depends: [

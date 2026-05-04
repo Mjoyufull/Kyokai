@@ -1,247 +1,107 @@
-# Austral
+# Kyokai
 
-![Build status badge](https://github.com/austral/austral/actions/workflows/build-and-test.yml/badge.svg)
+Kyokai is a systems programming language forked from Austral and built around explicit resource ownership, linear types, capability-based authority, and defined failure behavior.
 
-Austral is a new language.
+Kyokai is currently in early public development. The accepted language shape has been extracted, but the normative Kyokai spec and compiler implementation are still being brought up from the inherited Austral codebase.
 
-Features:
+## Current Status
 
-- **Linear types**: linear types allow resources to be handled in a
-  provably-safe manner. Memory can be managed safely and without runtime
-  overhead, avoiding double `free()`, use-after-`free` errors, and double fetch
-  errors. Other resources like file or database handles can also be handled
-  safely.
+| Area | Status |
+| --- | --- |
+| Accepted language shape | Present in `kyokaidecided.md`. |
+| Live public D-points | Tracked in `Kyokaishape.md`. |
+| Normative Kyokai spec | Not started yet; future home is `kyokaispec/`. |
+| Compiler | Inherited Austral OCaml compiler, being forked toward Kyokai. |
+| Standard library | Inherited Austral stdlib, being redesigned/admitted under Kyokai rules. |
+| Roadmap | `phase.md`. |
+| Code standards | `CODE_STANDARDS.md`. |
+| Project workflow | `PROJECT_STANDARDS.md`. |
 
-- **Capabilities**: linear [capabilities][cap] enable fine-grained permissioned
-  access to low-level facilities. Third-party dependencies can be constrained in
-  what types of resources they can access. This makes the language less
-  vulnerable to [supply chain attacks][sca].
+Inherited Austral examples, commands, docs, and spec files may still exist while the fork is being converted. Treat accepted Kyokai shape and future Kyokai spec text as the language authority, not stale inherited prose.
 
-- **Typeclasses**: typeclasses, borrowed from Haskell, allow for bounded ad-hoc
-  polymorphism.
+## Core Direction
 
-- **Safe Arithmetic**: Austral has well-defined semantics for all arithmetic
-  operations on numeric types. There are distinct operations for
-  trap-on-overflow arithmetic and modular arithmetic, as in Ada.
+Kyokai keeps Austral's most important safety ideas and pushes them toward a production systems language:
 
-- **Algebraic Data Types**: algebraic data types, as in ML or Haskell, with
-  exhaustiveness checking.
+- linear ownership for resources
+- capability-based authority instead of ambient global access
+- no language-level undefined behavior
+- explicit allocation, blocking, cleanup, and FFI boundaries
+- TPOE for contract violations
+- safe native standard-library implementations where practical
+- explicit compiler/spec/test traceability
 
-Anti-features:
+## Source-Of-Truth Order
 
-- No garbage collection.
-- No destructors.
-- No exceptions (and no surprise control flow).
-- No implicit function calls.
-- No implicit type conversions.
-- No implicit copies.
-- No global state.
-- No subtyping.
-- No macros.
-- No reflection.
-- No Java-style @Annotations.
-- No type inference, type information flows in one direction.
-- No uninitialized variables.
-- No pre/post increment/decrement (`x++` in C).
-- No first-class async.
-- No function overloading (except through typeclasses, where it is bounded).
-- No arithmetic precedence.
-- No variable shadowing.
+1. `kyokaispec/` once a Kyokai rule is written there.
+2. `kyokaidecided.md` for accepted Kyokai shape not yet spec-extracted.
+3. `Kyokaishape.md` for live public D-points and pending shape.
+4. Linked public discussions, issues, and PRs.
+5. `phase.md` for implementation order only.
 
-## Example
+`phase.md` is not a language spec. It records ordering, gates, and status.
 
-Calculate and print the 10th Fibonacci number:
+## Repository Map
 
-```ml
-module body Fib is
-    function fib(n: Nat64): Nat64 is
-        if n < 2 then
-            return n;
-        else
-            return fib(n - 1) + fib(n - 2);
-        end if;
-    end;
+| Path | Purpose |
+| --- | --- |
+| `lib/` | Current OCaml compiler source inherited from Austral. |
+| `standard/` | Current inherited standard-library tree. |
+| `test/` | Unit-level compiler tests. |
+| `test-programs/` | End-to-end compiler tests inherited from Austral. |
+| `kyokaispec/` | Future Kyokai specification workspace; currently inherited Austral staging material. |
+| `kyokaidecided.md` | Accepted Kyokai shape and maturity tracker. |
+| `Kyokaishape.md` | Public live D-point tracker. |
+| `phase.md` | Implementation/proof roadmap. |
+| `CODE_STANDARDS.md` | Mandatory code standards. |
+| `PROJECT_STANDARDS.md` | Public project workflow. |
 
-    function main(): ExitCode is
-        print("fib(10) = ");
-        printLn(fib(10));
-        return ExitSuccess();
-    end;
-end module body.
-```
+## Building The Current Inherited Compiler
 
-Build and run:
+The compiler is still inherited from Austral, so some package names and commands may still say `austral` until the fork identity work is complete.
+
+With Nix:
 
 ```bash
-$ austral compile fib.aum --entrypoint=Fib:main --output=fib
-$ ./fib
-fib(10) = 55
-```
-
-## Building with Nix
-
-If you have [Nix][nix], this will be much simpler. Just:
-
-[nix]: https://nixos.org/
-
-```bash
-$ nix-shell
-$ make
-```
-
-And you're done.
-
-## Building without Nix
-
-Building the `austral` compiler requires `make` and the `dune` build system for
-OCaml, and a C compiler for building the resulting output. You should install
-OCaml 4.13.0 or above.
-
-First:
-
-```bash
-$ git clone git@github.com:austral/austral.git
-$ cd austral
-```
-
-Next, install [opam][opam]. On Debian/Ubuntu you can just do:
-
-```bash
-$ sudo apt-get install opam
-$ opam init
-```
-
-Then, create an opam switch for austral and install dependencies via opam:
-
-```bash
-opam switch create austral 4.13.0
-eval $(opam env --switch=austral)
-opam install --deps-only -y .
-```
-
-Finally:
-```bash
+nix-shell
 make
 ```
 
-To run the tests:
+Without Nix, install OCaml, Dune, and opam dependencies, then run:
 
 ```bash
-$ ./run-tests.sh
+opam install --deps-only -y .
+make
 ```
 
-To build the standard library:
+Run tests with:
 
 ```bash
-$ cd standard
-$ make
+./run-tests.sh
 ```
 
-## Usage
-
-Suppose you have a program with modules `A`, `B`, and `C`, in the following
-files:
-
-```
-src/A.aui
-src/A.aum
-
-src/B.aui
-src/B.aum
-
-src/C.aui
-src/C.aum
-```
-
-To compile this, run:
+Build the inherited standard library with:
 
 ```bash
-$ austral compile \
-    src/A.aui,src/A.aum \
-    src/B.aui,src/B.aum \
-    src/C.aui,src/C.aum \
-    --entrypoint=C:main \
-    --output=program
+cd standard
+make
 ```
 
-The `--entrypoint` option must be the name of a module, followed by a colon,
-followed by the name of a public function with either of the following
-signatures:
+## Spec Workspace
 
-1. `function main(): ExitCode;`
-2. `function main(root: RootCapability): ExitCode;`
+`kyokaispec/` is intentionally kept inside this repository so spec text, compiler changes, tests, and phase tracking can move together.
 
-The `ExitCode` type has two constructors: `ExitSuccess()` and `ExitFailure()`.
+The spec source can later be published as a GitHub Pages site by building HTML/PDF from `kyokaispec/` and deploying only generated artifacts to a `gh-pages` branch or generated-docs path. The source should stay with the compiler unless there is a clear maintenance reason to split it.
 
-Finally, the `--output` option is just the path to dump the compiled C to.
+## License
 
-By default, the compiler will emit C code and invoke `cc` automatically to
-produce an executable. To just produce C code, use:
+Kyokai follows a split license boundary:
 
-```bash
-$ austral compile --target-type=c [modules...] --entrypoint=Foo:main --output=program.c
-```
+- compiler and toolchain code: `GPL-3.0-or-later`
+- runtime, standard library, startup code, compiler support library, target-side helpers, and compiler-emitted target helper code: `GPL-3.0-or-later WITH GCC-exception-3.1`
 
-If you don't need an entrypoint (because you're compiling a library), instead of
-`--entrypoint` you have to pass `--no-entrypoint`:
+The runtime exception keeps ordinary Kyokai target programs under the program author's chosen license when they merely use the Kyokai runtime, standard library, or exception-covered target helpers through the normal compilation/linking process.
 
-```bash
-$ austral compile --target-type=c [modules...] --no-entrypoint --output=program.c
-```
+See `LICENSE`, `COPYING`, and `COPYING.RUNTIME` for details.
 
-If you just want to typecheck without compiling, use the `tc` target type:
-
-```bash
-$ austral compile --target-type=tc [modules...]
-```
-
-Generated C code should be compiled with:
-
-```bash
-$ gcc -fwrapv generated.c -lm
-```
-
-## Status
-
-1. The bootstrapping compiler, written in OCaml, is implemented. The main
-   limitation is it does not support separate compilation. In practice this is
-   not a problem: there's not enough Austral code for this to matter.
-
-2. The compiler implements every feature of the spec.
-
-3. A standard library with a few basic data structures and capability-based
-   filesystem access is being designed.
-
-## Contributing
-
-See: [`CONTRIBUTING.md`](https://github.com/austral/austral/blob/master/CONTRIBUTING.md)
-
-## Community
-
-- [Discord](https://discord.gg/8cEuAcD8pM)
-
-## Roadmap
-
-Currently:
-
-- Expanding the [standard
-  library](https://github.com/austral/austral/tree/master/standard).
-
-Near-future work:
-
-- Build tooling and package manager.
-
-# License
-
-Copyright 2018–2023 [Fernando Borretti][fernando].
-
-Licensed under the [Apache 2.0 license][apache] with the [LLVM exception][llvmex]. See the [LICENSE file][license] for details.
-
-[opam]: https://opam.ocaml.org/doc/Install.html
-[cap]: https://en.wikipedia.org/wiki/Capability-based_security
-[sca]: https://en.wikipedia.org/wiki/Supply_chain_attack
-[fernando]: https://borretti.me/
-
-[apache]: https://www.apache.org/licenses/LICENSE-2.0
-[llvmex]: https://spdx.org/licenses/LLVM-exception.html
-[license]: https://github.com/austral/austral/blob/master/LICENSE
+Inherited Austral files may still carry Apache-2.0 WITH LLVM-exception notices. Preserve those notices unless the file is replaced or relicensed by the relevant copyright holder.

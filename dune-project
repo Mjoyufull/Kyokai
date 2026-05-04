@@ -8,6 +8,7 @@
  (name austral)
  (synopsis "The bootstrapping compiler for Austral")
  (description "The bootstrapping compiler for Austral.")
+ (license GPL-3.0-or-later)
  (homepage https://austral-lang.org/)
  (bug_reports https://github.com/austral/austral/issues)
  (depends
