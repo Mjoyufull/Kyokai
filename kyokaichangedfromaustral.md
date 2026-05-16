@@ -8,7 +8,7 @@ This document explains every change Kyokai makes from Austral, why each change w
 
 ## Normative basis (kyokaiplan.md)
 
-**Authoritative design source:** [`kyokaiplan.md`](./kyokaiplan.md) is the record of every decided **`D`** point and its rationale for Kyokai. Per **D86**, eventual **normative** text splits into a core language spec (derived from `australspec/`) and a companion toolchain spec; **`kyokaiplan.md` is neither of those** — it is the design plan that informs both. For *this* comparative document, if anything here disagrees with the plan on a decided point, **`kyokaiplan.md` wins** on substance.
+**Authoritative design source:** [`kyokaidecided.md`](./kyokaidecided.md) is the record of every decided **`D`** point and its rationale for Kyokai. Per **D86**, eventual **normative** text splits into a core language spec (derived from `australspec/`) and a companion toolchain spec; **`kyokaiplan.md` is neither of those** — it is the design plan that informs both. For *this* comparative document, if anything here disagrees with the plan on a decided point, **`kyokaiplan.md` wins** on substance.
 
 **Final verification pass (2026-05-01):**
 
@@ -2295,7 +2295,7 @@ Authoritative `D` numbering lives in `kyokaiplan.md` §3.3 and the appendix inde
 
 ---
 
-## Appendix: D204 through D263 decision titles (synced with `kyokaiplan.md`)
+## Appendix: D204 through D263 decision titles (synced with `kyokaidecided.md`)
 
 Rows are the **appendix short titles** from the current plan (≈ lines 10950–11010). Full prose for each decision lives under **`### Dnnn:`** in `kyokaiplan.md` and in **§3.3**.
 
